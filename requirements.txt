@@ -1,3 +1,8 @@
 django
 black
 isort
+djangorestframework
+dj-rest-auth[with_social]
+pytest
+pytest-cov
+pytest-django
