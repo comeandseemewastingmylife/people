@@ -3,7 +3,7 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 from rest_framework import generics, permissions, serializers
 
-from profiles.models import User
+from profiles.models import Profile
 
 
 class GitHubLogin(SocialLoginView):
@@ -12,16 +12,26 @@ class GitHubLogin(SocialLoginView):
     client_class = OAuth2Client
 
 
-class UserSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ("username", "email", "first_name", "last_name")
+        model = Profile
+        fields = (
+            "first_name",
+            "last_name",
+            "address",
+            "previous_address",
+            "phone_number",
+        )
 
 
-class UserDetails(generics.RetrieveUpdateDestroyAPIView):
+class ProfileDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
 
     def get_object(self):
-        return self.queryset.get(username=self.request.user.username)
+        try:
+            profile = self.queryset.get(user=self.request.user)
+        except Profile.DoesNotExist:
+            profile = Profile.objects.create(user=self.request.user)
+        return profile
